@@ -5,25 +5,38 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                echo 'Checking out source code...'
                 checkout scm
+            }
+        }
+
+        stage('Environment Check') {
+            steps {
+                sh 'python3 --version'
+                sh 'git --version'
+                sh 'docker --version'
+                sh 'ansible --version'
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat 'python -m pytest'
+                echo 'Running application tests...'
+                sh 'python3 -m pip install -r requirements.txt'
+                sh 'python3 -m pytest'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t cloud-native-cicd-platform:%BUILD_NUMBER% .'
+                echo 'Building Docker image...'
+                sh 'docker build -t cloud-native-cicd-platform:${BUILD_NUMBER} .'
             }
         }
 
         stage('Docker Image Check') {
             steps {
-                bat 'docker images cloud-native-cicd-platform'
+                sh 'docker images'
             }
         }
     }
