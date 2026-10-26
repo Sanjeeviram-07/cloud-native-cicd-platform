@@ -12,6 +12,8 @@ pipeline {
 
         stage('Environment Check') {
             steps {
+                echo 'Checking CI environment...'
+
                 sh 'python3 --version'
                 sh 'git --version'
                 sh 'docker --version'
@@ -21,22 +23,41 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                echo 'Running application tests...'
-                sh 'python3 -m pip install -r requirements.txt'
-                sh 'python3 -m pytest'
+                echo 'Creating isolated Python environment...'
+
+                sh '''
+                    rm -rf .venv
+
+                    python3 -m venv .venv
+
+                    .venv/bin/python -m pip install --upgrade pip
+
+                    .venv/bin/python -m pip install -r requirements.txt
+
+                    .venv/bin/python -m pytest -v
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t cloud-native-cicd-platform:${BUILD_NUMBER} .'
+
+                sh '''
+                    docker build \
+                        -t cloud-native-cicd-platform:${BUILD_NUMBER} \
+                        .
+                '''
             }
         }
 
         stage('Docker Image Check') {
             steps {
-                sh 'docker images'
+                echo 'Checking Docker image...'
+
+                sh '''
+                    docker images cloud-native-cicd-platform
+                '''
             }
         }
     }
@@ -48,6 +69,10 @@ pipeline {
 
         failure {
             echo 'CI Pipeline failed. Check the stage logs.'
+        }
+
+        always {
+            echo "Build number: ${BUILD_NUMBER}"
         }
     }
 }
