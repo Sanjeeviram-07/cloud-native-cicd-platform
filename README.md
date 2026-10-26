@@ -4,7 +4,7 @@ A production-grade, containerized Python microservice built with **FastAPI**, de
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 devops-container-platform/
