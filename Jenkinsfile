@@ -50,7 +50,19 @@ pipeline {
                 '''
             }
         }
-
+        stage('Trivy Security Scan') {
+            steps {
+                echo 'Scanning Docker image for vulnerabilities...'
+                sh '''
+                    trivy --config /dev/null image \
+                        --scanners vuln \
+                        --ignorefile /dev/null \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        cloud-native-cicd-platform:${BUILD_NUMBER}
+                '''
+            }
+        }
         stage('Docker Image Check') {
             steps {
                 echo 'Checking Docker image...'
