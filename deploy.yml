@@ -1,0 +1,47 @@
+---
+- name: Deploy Cloud Native Application
+  hosts: app
+  become: true
+
+  vars:
+    container_name: cloud-native-app
+    app_port: 8000
+    image_name: "{{ dockerhub_user }}/cloud-native-cicd-platform:{{ image_tag }}"
+
+  tasks:
+
+    - name: Pull application image
+      community.docker.docker_image:
+        name: "{{ image_name }}"
+        source: pull
+
+    - name: Stop and remove existing container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Start application container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "{{ app_port }}:8000"
+        env:
+          ENVIRONMENT: "production"
+          APP_VERSION: "{{ image_tag }}"
+          DEPLOYMENT_ID: "jenkins-{{ image_tag }}"
+
+    - name: Wait for application port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ app_port }}"
+        delay: 3
+        timeout: 30
+
+    - name: Check application health
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ app_port }}/healthz"
+        method: GET
+        status_code: 200
