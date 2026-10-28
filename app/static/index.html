@@ -1,1805 +1,288 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="dark">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>
-        DevOps Container Platform
-    </title>
-
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>DevOps Container Platform | Live Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-
-        tailwind.config = {
-
-            darkMode: "class",
-
-            theme: {
-
-                extend: {
-
-                    colors: {
-
-                        slate: {
-                            850: "#0f172a",
-                            900: "#0b0f19",
-                            950: "#07090e"
-                        }
-
-                    }
-
-                }
-
-            }
-
-        };
-
-    </script>
-
-
     <style>
         body {
-
-            background-color: #07090e;
-
-            background-image:
-                radial-gradient(circle at 50% 0%,
-                    #1e293b 0%,
-                    transparent 60%);
-
-            font-family:
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
+            background: radial-gradient(circle at 50% -10%, #172554 0, transparent 38%), #070b12;
+            font-family: Inter, system-ui, sans-serif
         }
-
 
         .card {
-
-            background:
-                linear-gradient(145deg,
-                    #0d1322,
-                    #080c16);
-
-            border:
-                1px solid rgba(255, 255, 255, 0.06);
-
-            box-shadow:
-                inset 2px 2px 5px rgba(0, 0, 0, 0.5);
-
+            background: linear-gradient(145deg, #0e1522, #080c14);
+            border: 1px solid #172033;
+            box-shadow: 0 12px 35px #0005
         }
 
-
-        .glow {
-
-            box-shadow:
-                0 0 20px rgba(16, 185, 129, 0.18);
-
+        .mono {
+            font-family: Consolas, monospace
         }
 
-
-        .terminal {
-
-            background:
-                #05070c;
-
-            font-family:
-                "JetBrains Mono",
-                Consolas,
-                monospace;
-
+        .bar {
+            transition: width .6s ease
         }
 
+        .pulse {
+            animation: pulse 1.8s infinite
+        }
 
-        .progress {
-
-            transition:
-                width 0.5s ease;
-
+        @keyframes pulse {
+            50% {
+                opacity: .35
+            }
         }
     </style>
-
 </head>
 
+<body class="text-slate-200 min-h-screen">
+    <main class="max-w-[1400px] mx-auto p-5 md:p-8">
 
-<body class="text-slate-200 min-h-screen p-5 md:p-8">
-
-
-    <div class="max-w-7xl mx-auto space-y-6">
-
-
-        <!-- =====================================================
-         HEADER
-    ====================================================== -->
-
-        <header class="
-        flex
-        flex-col
-        lg:flex-row
-        justify-between
-        gap-5
-        border-b
-        border-slate-800
-        pb-6
-        ">
-
+        <header
+            class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-800">
             <div>
-
-                <div class="
-                flex
-                items-center
-                gap-3
-                ">
-
-                    <span id="health-dot" class="
-                    w-3
-                    h-3
-                    rounded-full
-                    bg-emerald-500
-                    animate-pulse
-                    "></span>
-
-                    <h1 class="
-                    text-2xl
-                    md:text-3xl
-                    font-bold
-                    text-white
-                    ">
-                        DevOps Container Platform
-                    </h1>
-
-                </div>
-
-
-                <p class="
-                text-sm
-                text-slate-400
-                mt-2
-                ">
-                    CI/CD • Docker • Ansible • AWS • Container Monitoring
-                </p>
-
+                <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                    <span id="dot" class="w-3 h-3 rounded-full bg-emerald-400 pulse"></span>
+                    DevOps Container Platform
+                </h1>
+                <p class="text-xs text-slate-500 mt-2 ml-6">CI/CD • Docker • Ansible • AWS • Container Monitoring</p>
             </div>
-
-
-            <div class="
-            flex
-            flex-wrap
-            gap-2
-            ">
-
-                <span id="env-badge" class="
-                px-3
-                py-1.5
-                rounded-full
-                text-xs
-                bg-slate-800
-                text-cyan-400
-                border
-                border-slate-700
-                ">
-                    ENV: Loading...
-                </span>
-
-
-                <span id="version-badge" class="
-                px-3
-                py-1.5
-                rounded-full
-                text-xs
-                bg-slate-800
-                text-purple-400
-                border
-                border-slate-700
-                ">
-                    VERSION: --
-                </span>
-
-
-                <span id="container-badge" class="
-                px-3
-                py-1.5
-                rounded-full
-                text-xs
-                bg-slate-800
-                text-emerald-400
-                border
-                border-slate-700
-                ">
-                    DOCKER: --
-                </span>
-
+            <div class="flex flex-wrap gap-2">
+                <span id="env"
+                    class="px-3 py-2 rounded-full text-[10px] border border-cyan-900 bg-cyan-950/30 text-cyan-300">ENV:
+                    loading</span>
+                <span id="version"
+                    class="px-3 py-2 rounded-full text-[10px] border border-violet-900 bg-violet-950/30 text-violet-300">VERSION:
+                    --</span>
+                <span
+                    class="px-3 py-2 rounded-full text-[10px] border border-emerald-900 bg-emerald-950/30 text-emerald-300">DOCKER:
+                    ACTIVE</span>
+                <span id="updated" class="text-[10px] text-slate-600 self-center">Updating...</span>
             </div>
-
         </header>
 
-
-        <!-- =====================================================
-         SYSTEM METRICS
-    ====================================================== -->
-
-        <section class="
-        grid
-        grid-cols-1
-        md:grid-cols-2
-        lg:grid-cols-4
-        gap-5
-        ">
-
-
-            <!-- STATUS -->
-
-            <div class="card rounded-2xl p-5 glow">
-
-                <p class="
-                text-xs
-                uppercase
-                tracking-wider
-                text-slate-500
-                ">
-                    System Status
-                </p>
-
-
-                <div class="
-                flex
-                justify-between
-                items-center
-                mt-4
-                ">
-
-                    <span id="status-text" class="
-                    text-2xl
-                    font-bold
-                    text-emerald-400
-                    ">
-                        Operational
-                    </span>
-
-
-                    <span class="
-                    text-2xl
-                    ">
-                        ✓
-                    </span>
-
-                </div>
-
-
-                <p id="hostname" class="
-                text-xs
-                text-slate-500
-                mt-2
-                truncate
-                ">
-                    Host: --
-                </p>
-
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-5">
+            <div class="card rounded-xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500">System Status</div>
+                <div class="flex justify-between mt-4"><span id="status"
+                        class="text-xl font-bold text-emerald-400">Operational</span><span id="check"
+                        class="text-emerald-400 text-xl">✓</span></div>
+                <div id="host" class="mono text-[10px] text-slate-600 mt-2 truncate">Host: --</div>
             </div>
 
-
-            <!-- CPU -->
-
-            <div class="card rounded-2xl p-5">
-
-                <p class="
-                text-xs
-                uppercase
-                tracking-wider
-                text-slate-500
-                ">
-                    CPU Load
-                </p>
-
-
-                <div class="
-                flex
-                items-baseline
-                gap-2
-                mt-4
-                ">
-
-                    <span id="cpu-val" class="
-                    text-3xl
-                    font-bold
-                    text-white
-                    ">
-                        0
-                    </span>
-
-                    <span class="
-                    text-sm
-                    text-slate-500
-                    ">
-                        %
-                    </span>
-
+            <div class="card rounded-xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500">CPU Load</div>
+                <div class="mt-3"><span id="cpu" class="text-3xl font-bold text-white">0.0</span><span
+                        class="text-slate-500 text-sm"> %</span></div>
+                <div class="h-1.5 bg-slate-800 rounded-full mt-4 overflow-hidden">
+                    <div id="cpuBar" class="bar h-full bg-cyan-500" style="width:0"></div>
                 </div>
-
-
-                <div class="
-                w-full
-                bg-slate-800
-                h-2
-                rounded-full
-                mt-3
-                overflow-hidden
-                ">
-
-                    <div id="cpu-bar" class="
-                    progress
-                    bg-cyan-500
-                    h-full
-                    " style="width:0%"></div>
-
-                </div>
-
+                <div id="cpuState" class="text-[10px] text-slate-600 mt-2">Live telemetry</div>
             </div>
 
-
-            <!-- MEMORY -->
-
-            <div class="card rounded-2xl p-5">
-
-                <p class="
-                text-xs
-                uppercase
-                tracking-wider
-                text-slate-500
-                ">
-                    Memory
-                </p>
-
-
-                <div class="
-                flex
-                items-baseline
-                gap-2
-                mt-4
-                ">
-
-                    <span id="mem-val" class="
-                    text-3xl
-                    font-bold
-                    text-white
-                    ">
-                        0
-                    </span>
-
-                    <span class="
-                    text-sm
-                    text-slate-500
-                    ">
-                        %
-                    </span>
-
+            <div class="card rounded-xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500">Memory</div>
+                <div class="mt-3"><span id="mem" class="text-3xl font-bold text-white">0.0</span><span
+                        class="text-slate-500 text-sm"> %</span></div>
+                <div id="memDetail" class="text-[10px] text-slate-500 mt-1">0 MB / 0 MB</div>
+                <div class="h-1.5 bg-slate-800 rounded-full mt-3 overflow-hidden">
+                    <div id="memBar" class="bar h-full bg-violet-500" style="width:0"></div>
                 </div>
-
-
-                <p class="
-                text-xs
-                text-slate-500
-                mt-1
-                ">
-
-                    <span id="mem-used">
-                        0
-                    </span>
-
-                    MB /
-
-                    <span id="mem-total">
-                        0
-                    </span>
-
-                    MB
-
-                </p>
-
-
-                <div class="
-                w-full
-                bg-slate-800
-                h-2
-                rounded-full
-                mt-3
-                overflow-hidden
-                ">
-
-                    <div id="mem-bar" class="
-                    progress
-                    bg-purple-500
-                    h-full
-                    " style="width:0%"></div>
-
-                </div>
-
             </div>
 
-
-            <!-- TELEMETRY -->
-
-            <div class="card rounded-2xl p-5">
-
-                <p class="
-                text-xs
-                uppercase
-                tracking-wider
-                text-slate-500
-                ">
-                    Telemetry
-                </p>
-
-
-                <div class="
-                space-y-2
-                mt-4
-                text-sm
-                ">
-
-                    <div class="
-                    flex
-                    justify-between
-                    ">
-
-                        <span class="text-slate-500">
-                            Uptime
-                        </span>
-
-                        <span id="uptime" class="font-mono text-white">
-                            0s
-                        </span>
-
+            <div class="card rounded-xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500">Telemetry</div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <div class="text-[10px] text-slate-500">Uptime</div>
+                        <div id="uptime" class="mono text-sm text-white mt-1">--</div>
                     </div>
-
-
-                    <div class="
-                    flex
-                    justify-between
-                    ">
-
-                        <span class="text-slate-500">
-                            Connections
-                        </span>
-
-                        <span id="connections" class="font-mono text-cyan-400">
-                            0
-                        </span>
-
+                    <div>
+                        <div class="text-[10px] text-slate-500">Connections</div>
+                        <div id="connections" class="mono text-sm text-cyan-300 mt-1">0</div>
                     </div>
-
                 </div>
-
+                <div id="platform" class="text-[10px] text-slate-600 mt-3 truncate">Platform: --</div>
             </div>
-
         </section>
 
-
-        <!-- =====================================================
-         CI/CD + DEPLOYMENT
-    ====================================================== -->
-
-        <section class="
-        grid
-        grid-cols-1
-        lg:grid-cols-2
-        gap-5
-        ">
-
-
-            <!-- CICD -->
-
-            <div class="card rounded-2xl p-6">
-
-                <div class="
-                flex
-                justify-between
-                items-center
-                mb-5
-                ">
-
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+            <div class="card rounded-xl p-5">
+                <div class="flex justify-between">
                     <div>
-
-                        <h2 class="
-                        text-lg
-                        font-semibold
-                        text-white
-                        ">
-                            CI/CD Pipeline
-                        </h2>
-
-                        <p class="
-                        text-xs
-                        text-slate-500
-                        mt-1
-                        ">
-                            Jenkins automated deployment pipeline
-                        </p>
-
+                        <h2 class="font-semibold text-white">CI/CD Pipeline</h2>
+                        <p class="text-[10px] text-slate-500 mt-1">Current deployment pipeline</p>
                     </div>
-
-
-                    <span id="pipeline-status" class="
-                    px-3
-                    py-1
-                    rounded-full
-                    text-xs
-                    bg-emerald-500/10
-                    text-emerald-400
-                    ">
-                        SUCCESS
-                    </span>
-
+                    <span id="pipeline"
+                        class="px-2.5 py-1 rounded-full bg-emerald-950 border border-emerald-900 text-[10px] text-emerald-400">SUCCESS</span>
                 </div>
-
-
-                <div class="
-                grid
-                grid-cols-2
-                md:grid-cols-4
-                gap-3
-                ">
-
-                    <div class="bg-slate-950 rounded-xl p-3">
-
-                        <p class="text-xs text-slate-500">
-                            Build
-                        </p>
-
-                        <p id="build-number" class="text-white font-semibold mt-1">
-                            --
-                        </p>
-
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5">
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                        <div class="text-[9px] text-slate-600">BUILD</div>
+                        <div id="build" class="mono text-xs text-white mt-1">#--</div>
                     </div>
-
-
-                    <div class="bg-slate-950 rounded-xl p-3">
-
-                        <p class="text-xs text-slate-500">
-                            Branch
-                        </p>
-
-                        <p id="branch" class="text-white font-semibold mt-1">
-                            main
-                        </p>
-
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                        <div class="text-[9px] text-slate-600">BRANCH</div>
+                        <div class="text-xs text-white mt-1">main</div>
                     </div>
-
-
-                    <div class="bg-slate-950 rounded-xl p-3">
-
-                        <p class="text-xs text-slate-500">
-                            Security
-                        </p>
-
-                        <p id="security" class="text-emerald-400 font-semibold mt-1">
-                            PASS
-                        </p>
-
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                        <div class="text-[9px] text-slate-600">SECURITY</div>
+                        <div class="text-xs text-emerald-400 mt-1">TRIVY PASS</div>
                     </div>
-
-
-                    <div class="bg-slate-950 rounded-xl p-3">
-
-                        <p class="text-xs text-slate-500">
-                            Commit
-                        </p>
-
-                        <p id="commit" class="
-                        text-white
-                        font-mono
-                        text-xs
-                        mt-2
-                        ">
-                            --
-                        </p>
-
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+                        <div class="text-[9px] text-slate-600">DEPLOY</div>
+                        <div class="text-xs text-emerald-400 mt-1">LIVE</div>
                     </div>
-
                 </div>
-
-
-                <div class="
-                flex
-                flex-wrap
-                items-center
-                gap-2
-                mt-5
-                ">
-
-                    <span class="
-                    px-3
-                    py-1
-                    rounded-lg
-                    bg-slate-950
-                    text-xs
-                    text-cyan-400
-                    ">
-                        GitHub
-                    </span>
-
-                    <span class="text-slate-600">
-                        →
-                    </span>
-
-                    <span class="
-                    px-3
-                    py-1
-                    rounded-lg
-                    bg-slate-950
-                    text-xs
-                    text-red-400
-                    ">
-                        Jenkins
-                    </span>
-
-                    <span class="text-slate-600">
-                        →
-                    </span>
-
-                    <span class="
-                    px-3
-                    py-1
-                    rounded-lg
-                    bg-slate-950
-                    text-xs
-                    text-blue-400
-                    ">
-                        Docker
-                    </span>
-
-                    <span class="text-slate-600">
-                        →
-                    </span>
-
-                    <span class="
-                    px-3
-                    py-1
-                    rounded-lg
-                    bg-slate-950
-                    text-xs
-                    text-orange-400
-                    ">
-                        Ansible
-                    </span>
-
-                    <span class="text-slate-600">
-                        →
-                    </span>
-
-                    <span class="
-                    px-3
-                    py-1
-                    rounded-lg
-                    bg-slate-950
-                    text-xs
-                    text-yellow-400
-                    ">
-                        AWS EC2
-                    </span>
-
+                <div class="flex flex-wrap gap-2 items-center mt-5 text-[10px]">
+                    <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800">GitHub</span>→
+                    <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800">Jenkins</span>→
+                    <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800">Docker</span>→
+                    <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800">Trivy</span>→
+                    <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800">Ansible</span>→
+                    <span class="px-2 py-1 rounded bg-amber-950 border border-amber-900 text-amber-300">AWS EC2</span>
                 </div>
-
             </div>
 
-
-            <!-- DEPLOYMENT -->
-
-            <div class="card rounded-2xl p-6">
-
-                <div class="
-                flex
-                justify-between
-                items-center
-                mb-5
-                ">
-
+            <div class="card rounded-xl p-5">
+                <div class="flex justify-between">
                     <div>
-
-                        <h2 class="
-                        text-lg
-                        font-semibold
-                        text-white
-                        ">
-                            Deployment
-                        </h2>
-
-                        <p class="
-                        text-xs
-                        text-slate-500
-                        mt-1
-                        ">
-                            Current production release
-                        </p>
-
+                        <h2 class="font-semibold text-white">Deployment</h2>
+                        <p class="text-[10px] text-slate-500 mt-1">Current production release</p>
                     </div>
-
-
-                    <span class="
-                    text-emerald-400
-                    ">
-                        ● LIVE
-                    </span>
-
+                    <span class="text-[10px] text-emerald-400">● LIVE</span>
                 </div>
-
-
-                <div class="
-                grid
-                grid-cols-2
-                gap-4
-                ">
-
+                <div class="grid grid-cols-2 gap-5 mt-5">
                     <div>
-
-                        <p class="text-xs text-slate-500">
-                            Version
-                        </p>
-
-                        <p id="deployment-version" class="
-                        text-xl
-                        font-bold
-                        text-white
-                        mt-1
-                        ">
-                            v1.0.0
-                        </p>
-
+                        <div class="text-[9px] text-slate-600">VERSION</div>
+                        <div id="deployVersion" class="mono text-sm text-cyan-300 mt-1">--</div>
                     </div>
-
-
                     <div>
-
-                        <p class="text-xs text-slate-500">
-                            Deployment ID
-                        </p>
-
-                        <p id="deployment-id" class="
-                        text-xl
-                        font-bold
-                        text-cyan-400
-                        mt-1
-                        ">
-                            LOCAL
-                        </p>
-
+                        <div class="text-[9px] text-slate-600">DEPLOYMENT ID</div>
+                        <div id="deploymentId" class="mono text-sm text-cyan-300 mt-1 truncate">--</div>
                     </div>
-
-
                     <div>
-
-                        <p class="text-xs text-slate-500">
-                            Method
-                        </p>
-
-                        <p class="
-                        text-sm
-                        text-white
-                        mt-1
-                        ">
-                            Jenkins + Ansible
-                        </p>
-
+                        <div class="text-[9px] text-slate-600">METHOD</div>
+                        <div class="text-xs text-white mt-1">Jenkins + Ansible</div>
                     </div>
-
-
                     <div>
-
-                        <p class="text-xs text-slate-500">
-                            Runtime
-                        </p>
-
-                        <p class="
-                        text-sm
-                        text-white
-                        mt-1
-                        ">
-                            Docker
-                        </p>
-
+                        <div class="text-[9px] text-slate-600">RUNTIME</div>
+                        <div class="text-xs text-white mt-1">Docker / FastAPI</div>
                     </div>
-
                 </div>
-
             </div>
-
         </section>
 
-
-        <!-- =====================================================
-         DEPLOYMENT HISTORY
-    ====================================================== -->
-
-        <section class="card rounded-2xl p-6">
-
-            <div class="flex justify-between items-center mb-5">
-
+        <section class="card rounded-xl mt-4 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between">
                 <div>
-
-                    <h2 class="
-                    text-lg
-                    font-semibold
-                    text-white
-                    ">
-                        Deployment History
-                    </h2>
-
-                    <p class="
-                    text-xs
-                    text-slate-500
-                    mt-1
-                    ">
-                        Recent application releases
-                    </p>
-
+                    <h2 class="font-semibold text-white">Deployment History</h2>
+                    <p class="text-[10px] text-slate-500 mt-1">Releases observed by this dashboard</p>
                 </div>
-
+                <button onclick="clearHistory()" class="text-[10px] text-slate-600 hover:text-slate-300">Clear local
+                    history</button>
             </div>
-
-
-            <div id="deployment-history" class="
-            overflow-x-auto
-            ">
-
-                <p class="
-                text-sm
-                text-slate-500
-                ">
-                    Loading deployment history...
-                </p>
-
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="text-[9px] uppercase text-slate-600 border-b border-slate-800">
+                        <tr>
+                            <th class="px-5 py-3">Build</th>
+                            <th class="px-5 py-3">Version</th>
+                            <th class="px-5 py-3">Environment</th>
+                            <th class="px-5 py-3">Status</th>
+                            <th class="px-5 py-3">Observed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history" class="text-[10px]"></tbody>
+                </table>
             </div>
-
         </section>
 
-
-        <!-- =====================================================
-         ECHO + LOGS
-    ====================================================== -->
-
-        <section class="
-        grid
-        grid-cols-1
-        lg:grid-cols-2
-        gap-5
-        ">
-
-
-            <!-- ECHO -->
-
-            <div class="card rounded-2xl p-6">
-
-                <h2 class="
-                text-lg
-                font-semibold
-                text-white
-                ">
-                    API Live Tester
-                </h2>
-
-
-                <p class="
-                text-xs
-                text-slate-500
-                mt-1
-                mb-5
-                ">
-                    Send a request directly to the FastAPI container.
-                </p>
-
-
-                <input id="echo-msg" type="text" value="Hello DevOps Platform!" class="
-                w-full
-                bg-slate-950
-                border
-                border-slate-800
-                rounded-xl
-                px-4
-                py-3
-                text-sm
-                text-white
-                outline-none
-                focus:border-cyan-500
-                ">
-
-
-                <button onclick="sendEcho()" class="
-                w-full
-                mt-3
-                bg-cyan-600
-                hover:bg-cyan-500
-                text-white
-                font-medium
-                py-3
-                rounded-xl
-                transition
-                ">
-                    Send POST Request
-                </button>
-
-
-                <pre id="echo-response" class="
-                terminal
-                mt-4
-                rounded-xl
-                border
-                border-slate-800
-                p-4
-                h-36
-                overflow-auto
-                text-xs
-                text-emerald-400
-                ">Waiting for request...</pre>
-
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+            <div class="card rounded-xl p-5">
+                <h2 class="font-semibold text-white">API Live Tester</h2>
+                <p class="text-[10px] text-slate-500 mt-1">POST directly to the FastAPI container.</p>
+                <div class="flex gap-2 mt-5"><input id="message" value="Hello DevOps Platform!"
+                        class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-cyan-600">
+                    <button id="send" onclick="sendEcho()"
+                        class="px-4 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold">Send</button>
+                </div>
+                <pre id="response"
+                    class="mono mt-3 h-36 overflow-auto bg-slate-950 border border-slate-800 rounded-lg p-3 text-[10px] text-emerald-400">// waiting for request</pre>
             </div>
 
-
-            <!-- LOGS -->
-
-            <div class="card rounded-2xl p-6">
-
-                <div class="
-                flex
-                justify-between
-                items-center
-                ">
-
-                    <h2 class="
-                    text-lg
-                    font-semibold
-                    text-white
-                    ">
-                        Activity Console
-                    </h2>
-
-
-                    <span class="
-                    text-xs
-                    text-emerald-400
-                    ">
-                        ● LIVE
-                    </span>
-
+            <div class="card rounded-xl p-5">
+                <div class="flex justify-between">
+                    <div>
+                        <h2 class="font-semibold text-white">Activity Console</h2>
+                        <p class="text-[10px] text-slate-500 mt-1">Live application events</p>
+                    </div><span class="text-[10px] text-emerald-400">● LIVE</span>
                 </div>
-
-
-                <p class="
-                text-xs
-                text-slate-500
-                mt-1
-                mb-4
-                ">
-                    Real-time application events
-                </p>
-
-
-                <div id="log-console" class="
-                terminal
-                border
-                border-slate-800
-                rounded-xl
-                p-4
-                h-64
-                overflow-y-auto
-                space-y-2
-                ">
-
-                    <div class="
-                    text-xs
-                    text-slate-600
-                    ">
-                        Connecting to application...
-                    </div>
-
+                <div id="logs"
+                    class="mono mt-4 h-48 overflow-y-auto bg-slate-950 border border-slate-800 rounded-lg p-3 text-[9px] leading-5">
+                    <div class="text-slate-600">Connecting...</div>
                 </div>
-
             </div>
-
         </section>
 
-
-        <!-- =====================================================
-         FOOTER
-    ====================================================== -->
-
-        <footer class="
-        text-center
-        text-xs
-        text-slate-600
-        py-5
-        ">
-
-            DevOps Container Platform
-            •
-            FastAPI
-            •
-            Docker
-            •
-            Jenkins
-            •
-            Ansible
-            •
-            AWS
-
-        </footer>
-
-
-    </div>
-
+        <footer class="text-center text-[9px] text-slate-700 py-5">DevOps Container Platform • FastAPI • Docker •
+            Jenkins • Ansible • AWS</footer>
+    </main>
 
     <script>
-
-
-        /*
-        ==============================================================
-        IMPORTANT
-        
-        Do NOT use:
-        
-        http://localhost:8000
-        
-        The dashboard and API are served by the same FastAPI server.
-        
-        Using an empty API_BASE makes this work on:
-        
-        localhost
-        AWS EC2
-        Docker
-        Nginx
-        custom domain
-        ==============================================================
-        */
-
         const API_BASE = "";
+        const $ = id => document.getElementById(id);
 
+        function versionOf(d) { return d.app_version ?? d.version ?? d.APP_VERSION ?? d.release_version ?? "--" }
+        function deploymentOf(d) { return d.deployment_id ?? d.deploymentId ?? d.DEPLOYMENT_ID ?? "--" }
+        function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c])) }
+        function uptime(s) { s = Math.max(0, Number(s) || 0); let d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = Math.floor(s % 60); return d ? `${d}d ${h}h ${m}m` : h ? `${h}h ${m}m ${x}s` : m ? `${m}m ${x}s` : `${x}s` }
 
-        /*
-        ==============================================================
-        HELPER
-        ==============================================================
-        */
-
-        function element(id) {
-
-            return document.getElementById(id);
-
+        function renderHistory() {
+            const a = JSON.parse(localStorage.getItem("dcp_history") || "[]");
+            $("history").innerHTML = a.length ? a.slice(0, 8).map(x => `<tr class="border-b border-slate-900"><td class="px-5 py-3 mono text-white">#${esc(x.build)}</td><td class="px-5 py-3 mono text-cyan-300">v${esc(x.version)}</td><td class="px-5 py-3 text-slate-400">${esc(x.env)}</td><td class="px-5 py-3 text-emerald-400">● SUCCESS</td><td class="px-5 py-3 text-slate-600">${esc(x.time)}</td></tr>`).join("") : `<tr><td colspan="5" class="px-5 py-6 text-center text-slate-600">No deployments observed yet.</td></tr>`;
         }
-
-
-        /*
-        ==============================================================
-        SYSTEM METRICS
-        ==============================================================
-        */
-
-        async function fetchMetrics() {
-
+        function remember(d) {
+            const v = versionOf(d), id = deploymentOf(d); if (v === "--" && id === "--") return;
+            let a = JSON.parse(localStorage.getItem("dcp_history") || "[]");
+            if (!a.some(x => x.version === String(v) && x.id === String(id))) { a.unshift({ build: String(v).replace(/^v|^#/i, ""), version: String(v), id: String(id), env: d.environment || "production", time: new Date().toLocaleTimeString() }); localStorage.setItem("dcp_history", JSON.stringify(a.slice(0, 12))) } renderHistory();
+        }
+        function state(ok) {
+            $("dot").className = ok ? "w-3 h-3 rounded-full bg-emerald-400 pulse" : "w-3 h-3 rounded-full bg-rose-500";
+            $("status").textContent = ok ? "Operational" : "Disconnected";
+            $("status").className = ok ? "text-xl font-bold text-emerald-400" : "text-xl font-bold text-rose-400";
+            $("check").textContent = ok ? "✓" : "!";
+            $("check").className = ok ? "text-emerald-400 text-xl" : "text-rose-400 text-xl";
+        }
+        async function metrics() {
             try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/metrics`
-                    );
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "Metrics API unavailable"
-                    );
-
-                }
-
-
-                const data =
-                    await response.json();
-
-
-                element("status-text")
-                    .innerText =
-                    "Operational";
-
-
-                element("status-text").className =
-                    "text-2xl font-bold text-emerald-400";
-
-
-                element("health-dot").className =
-                    "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
-
-
-                element("env-badge")
-                    .innerText =
-                    `ENV: ${data.environment}`;
-
-
-                element("version-badge")
-                    .innerText =
-                    `VERSION: ${data.version}`;
-
-
-                element("container-badge")
-                    .innerText =
-                    data.containerized
-                        ? "DOCKER: ACTIVE"
-                        : "DOCKER: LOCAL";
-
-
-                element("hostname")
-                    .innerText =
-                    `Host: ${data.hostname}`;
-
-
-                element("cpu-val")
-                    .innerText =
-                    data.cpu_usage_percent.toFixed(1);
-
-
-                element("cpu-bar")
-                    .style.width =
-                    `${Math.min(
-                        data.cpu_usage_percent,
-                        100
-                    )}%`;
-
-
-                element("mem-val")
-                    .innerText =
-                    data.memory_usage_percent.toFixed(1);
-
-
-                element("mem-used")
-                    .innerText =
-                    data.memory_used_mb;
-
-
-                element("mem-total")
-                    .innerText =
-                    data.memory_total_mb;
-
-
-                element("mem-bar")
-                    .style.width =
-                    `${Math.min(
-                        data.memory_usage_percent,
-                        100
-                    )}%`;
-
-
-                element("uptime")
-                    .innerText =
-                    formatUptime(
-                        data.uptime_seconds
-                    );
-
-
-                element("connections")
-                    .innerText =
-                    data.active_connections;
-
-
-            } catch (error) {
-
-                element("status-text")
-                    .innerText =
-                    "Disconnected";
-
-
-                element("status-text").className =
-                    "text-2xl font-bold text-rose-500";
-
-
-                element("health-dot").className =
-                    "w-3 h-3 rounded-full bg-rose-500";
-
-
-                console.error(
-                    "Metrics error:",
-                    error
-                );
-
-            }
-
+                const r = await fetch(`${API_BASE}/`, { cache: "no-store" }); if (!r.ok) throw Error(`HTTP ${r.status}`); const d = await r.json();
+                state(true); let c = Number(d.cpu_usage_percent ?? 0), m = Number(d.memory_usage_percent ?? 0), v = versionOf(d), id = deploymentOf(d);
+                $("env").textContent = `ENV: ${(d.environment || "production").toUpperCase()}`; $("version").textContent = `VERSION: ${v}`;
+                $("host").textContent = `Host: ${d.hostname || "--"}`; $("cpu").textContent = c.toFixed(1); $("cpuBar").style.width = Math.min(c, 100) + "%";
+                $("cpuState").textContent = c < 70 ? "Within normal operating range" : c < 90 ? "Elevated utilization" : "High utilization";
+                $("mem").textContent = m.toFixed(1); $("memDetail").textContent = `${d.memory_used_mb ?? 0} MB / ${d.memory_total_mb ?? 0} MB`; $("memBar").style.width = Math.min(m, 100) + "%";
+                $("uptime").textContent = uptime(d.uptime_seconds); $("connections").textContent = d.active_connections ?? 0; $("platform").textContent = `Platform: ${d.platform || "--"}`;
+                $("deployVersion").textContent = v; $("deploymentId").textContent = id; $("build").textContent = "#" + String(v).replace(/^v|^#/i, ""); remember(d); $("updated").textContent = `Updated ${new Date().toLocaleTimeString()}`;
+            } catch (e) { state(false); $("updated").textContent = "Connection lost"; console.error(e) }
         }
-
-
-        /*
-        ==============================================================
-        DEPLOYMENT
-        ==============================================================
-        */
-
-        async function fetchDeployment() {
-
+        async function logs() {
             try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/deployment`
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                element("deployment-version")
-                    .innerText =
-                    data.version;
-
-
-                element("deployment-id")
-                    .innerText =
-                    data.deployment_id;
-
-            } catch (error) {
-
-                console.error(
-                    "Deployment API error:",
-                    error
-                );
-
-            }
-
+                const r = await fetch(`${API_BASE}/api/logs`, { cache: "no-store" }); if (!r.ok) throw Error(`HTTP ${r.status}`); const d = await r.json(); const a = Array.isArray(d.logs) ? d.logs : [];
+                $("logs").innerHTML = a.slice(-60).map(x => { let l = String(x.level || "INFO").toUpperCase(), cl = l === "SUCCESS" ? "text-emerald-400" : l === "WARN" ? "text-amber-400" : l === "ERROR" ? "text-rose-400" : "text-cyan-400"; let t = x.timestamp ? new Date(x.timestamp).toLocaleTimeString() : "--:--:--"; return `<div><span class="text-slate-700">[${esc(t)}]</span><span class="${cl}"> [${esc(l)}]</span><span class="text-slate-400"> ${esc(x.message)}</span></div>` }).join("") || `<div class="text-slate-600">No events recorded.</div>`; $("logs").scrollTop = $("logs").scrollHeight
+            } catch (e) { $("logs").innerHTML = `<div class="text-rose-400">Log stream unavailable</div>` }
         }
-
-
-        /*
-        ==============================================================
-        CI/CD
-        ==============================================================
-        */
-
-        async function fetchCICD() {
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/cicd`
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                element("pipeline-status")
-                    .innerText =
-                    data.status;
-
-
-                element("build-number")
-                    .innerText =
-                    data.build_number;
-
-
-                element("branch")
-                    .innerText =
-                    data.branch;
-
-
-                element("commit")
-                    .innerText =
-                    data.commit;
-
-
-                element("security")
-                    .innerText =
-                    data.security_scan;
-
-            } catch (error) {
-
-                console.error(
-                    "CI/CD API error:",
-                    error
-                );
-
-            }
-
-        }
-
-
-        /*
-        ==============================================================
-        DEPLOYMENT HISTORY
-        ==============================================================
-        */
-
-        async function fetchDeploymentHistory() {
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/deployments`
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                const container =
-                    element(
-                        "deployment-history"
-                    );
-
-
-                container.innerHTML = `
-
-            <table class="w-full text-sm">
-
-                <thead>
-
-                    <tr
-                        class="
-                        text-left
-                        text-xs
-                        uppercase
-                        tracking-wider
-                        text-slate-500
-                        border-b
-                        border-slate-800
-                        "
-                    >
-
-                        <th class="pb-3">
-                            Build
-                        </th>
-
-                        <th class="pb-3">
-                            Version
-                        </th>
-
-                        <th class="pb-3">
-                            Environment
-                        </th>
-
-                        <th class="pb-3">
-                            Status
-                        </th>
-
-                        <th class="pb-3">
-                            Time
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${data.deployments.map(
-                    deployment => {
-
-                        const statusClass =
-                            deployment.status ===
-                                "SUCCESS"
-
-                                ? "text-emerald-400"
-
-                                : "text-amber-400";
-
-
-                        return `
-
-                                <tr
-                                    class="
-                                    border-b
-                                    border-slate-900
-                                    "
-                                >
-
-                                    <td
-                                        class="
-                                        py-3
-                                        font-mono
-                                        text-white
-                                        "
-                                    >
-                                        ${deployment.build}
-                                    </td>
-
-                                    <td
-                                        class="
-                                        py-3
-                                        text-cyan-400
-                                        "
-                                    >
-                                        ${deployment.version}
-                                    </td>
-
-                                    <td
-                                        class="
-                                        py-3
-                                        text-slate-400
-                                        "
-                                    >
-                                        ${deployment.environment}
-                                    </td>
-
-                                    <td
-                                        class="
-                                        py-3
-                                        font-medium
-                                        ${statusClass}
-                                        "
-                                    >
-                                        ${deployment.status}
-                                    </td>
-
-                                    <td
-                                        class="
-                                        py-3
-                                        text-slate-500
-                                        "
-                                    >
-                                        ${deployment.time}
-                                    </td>
-
-                                </tr>
-
-                            `;
-
-                    }
-                ).join("")}
-
-                </tbody>
-
-            </table>
-
-        `;
-
-            } catch (error) {
-
-                console.error(
-                    "Deployment history error:",
-                    error
-                );
-
-            }
-
-        }
-
-
-        /*
-        ==============================================================
-        LOGS
-        ==============================================================
-        */
-
-        async function fetchLogs() {
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/logs`
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                const consoleDiv =
-                    element(
-                        "log-console"
-                    );
-
-
-                consoleDiv.innerHTML =
-                    data.logs.map(
-                        log => {
-
-                            let color =
-                                "text-cyan-400";
-
-
-                            if (
-                                log.level ===
-                                "SUCCESS"
-                            ) {
-
-                                color =
-                                    "text-emerald-400";
-
-                            }
-
-
-                            if (
-                                log.level ===
-                                "WARN"
-                            ) {
-
-                                color =
-                                    "text-amber-400";
-
-                            }
-
-
-                            if (
-                                log.level ===
-                                "ERROR"
-                            ) {
-
-                                color =
-                                    "text-rose-400";
-
-                            }
-
-
-                            const time =
-                                new Date(
-                                    log.timestamp
-                                )
-                                    .toLocaleTimeString();
-
-
-                            return `
-
-                        <div
-                            class="
-                            text-xs
-                            "
-                        >
-
-                            <span
-                                class="text-slate-600"
-                            >
-                                [${time}]
-                            </span>
-
-                            <span
-                                class="${color}"
-                            >
-                                [${log.level}]
-                            </span>
-
-                            <span
-                                class="text-slate-300"
-                            >
-                                ${escapeHTML(
-                                log.message
-                            )}
-                            </span>
-
-                        </div>
-
-                    `;
-
-                        }
-                    ).join("");
-
-
-                consoleDiv.scrollTop =
-                    consoleDiv.scrollHeight;
-
-
-            } catch (error) {
-
-                console.error(
-                    "Logs error:",
-                    error
-                );
-
-            }
-
-        }
-
-
-        /*
-        ==============================================================
-        ECHO API
-        ==============================================================
-        */
-
         async function sendEcho() {
-
-            const message =
-                element(
-                    "echo-msg"
-                ).value;
-
-
-            const responseBox =
-                element(
-                    "echo-response"
-                );
-
-
-            responseBox.innerText =
-                "Sending request...";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/echo`,
-                        {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                message: message,
-
-                                metadata: {
-                                    source:
-                                        "dashboard-ui"
-                                }
-
-                            })
-
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                responseBox.innerText =
-                    JSON.stringify(
-                        data,
-                        null,
-                        2
-                    );
-
-
-                fetchLogs();
-
-
-            } catch (error) {
-
-                responseBox.innerText =
-                    `Error: ${error.message}`;
-
-            }
-
+            let msg = $("message").value.trim(); if (!msg) return; $("send").disabled = true; $("send").textContent = "Sending..."; $("response").textContent = "POST /echo ...";
+            try { let r = await fetch(`${API_BASE}/echo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg, metadata: { source: "dashboard-ui", client_time: new Date().toISOString() } }) }); $("response").textContent = JSON.stringify(await r.json(), null, 2); logs() } catch (e) { $("response").textContent = `Request failed: ${e.message}` } finally { $("send").disabled = false; $("send").textContent = "Send" }
         }
-
-
-        /*
-        ==============================================================
-        UPTIME FORMAT
-        ==============================================================
-        */
-
-        function formatUptime(seconds) {
-
-            seconds =
-                Math.floor(seconds);
-
-
-            const days =
-                Math.floor(
-                    seconds / 86400
-                );
-
-
-            seconds %= 86400;
-
-
-            const hours =
-                Math.floor(
-                    seconds / 3600
-                );
-
-
-            seconds %= 3600;
-
-
-            const minutes =
-                Math.floor(
-                    seconds / 60
-                );
-
-
-            seconds %= 60;
-
-
-            if (days > 0) {
-
-                return `${days}d ${hours}h ${minutes}m`;
-
-            }
-
-
-            if (hours > 0) {
-
-                return `${hours}h ${minutes}m ${seconds}s`;
-
-            }
-
-
-            if (minutes > 0) {
-
-                return `${minutes}m ${seconds}s`;
-
-            }
-
-
-            return `${seconds}s`;
-
-        }
-
-
-        /*
-        ==============================================================
-        HTML ESCAPE
-        ==============================================================
-        */
-
-        function escapeHTML(value) {
-
-            return String(value)
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-
-        }
-
-
-        /*
-        ==============================================================
-        INITIAL LOAD
-        ==============================================================
-        */
-
-        async function refreshDashboard() {
-
-            await Promise.all([
-
-                fetchMetrics(),
-
-                fetchDeployment(),
-
-                fetchCICD(),
-
-                fetchDeploymentHistory(),
-
-                fetchLogs()
-
-            ]);
-
-        }
-
-
-        /*
-        ==============================================================
-        AUTO REFRESH
-        ==============================================================
-        */
-
-        refreshDashboard();
-
-
-        setInterval(
-            refreshDashboard,
-            3000
-        );
-
+        function clearHistory() { localStorage.removeItem("dcp_history"); renderHistory() }
+        $("message").addEventListener("keydown", e => { if (e.key === "Enter") sendEcho() });
+        renderHistory(); metrics(); logs(); setInterval(metrics, 2000); setInterval(logs, 2500);
     </script>
-
-
 </body>
 
 </html>
