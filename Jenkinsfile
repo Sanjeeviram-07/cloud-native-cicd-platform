@@ -106,15 +106,28 @@ pipeline {
                         credentialsId: 'dockerhub-credentials',
                         usernameVariable: 'DOCKERHUB_USER',
                         passwordVariable: 'DOCKERHUB_TOKEN'
+                    ),
+                    string(
+                        credentialsId: 'ansible-vault-password',
+                        variable: 'VAULT_PASSWORD'
                     )
                 ]) {
 
                     sshagent(credentials: ['ansible-ec2-key']) {
 
                         sh '''
+                            set +x
+
+                            trap 'rm -f .vault-pass' EXIT
+
+                            printf '%s' "$VAULT_PASSWORD" > .vault-pass
+
+                            chmod 600 .vault-pass
+
                             ansible-playbook \
                                 -i inventory.ini \
                                 deploy.yml \
+                                --vault-password-file .vault-pass \
                                 -e "dockerhub_user=$DOCKERHUB_USER" \
                                 -e "image_tag=$BUILD_NUMBER"
                         '''
