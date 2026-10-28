@@ -97,6 +97,32 @@ pipeline {
             }
         }
 
+        stage('Deploy to EC2 with Ansible') {
+            steps {
+                echo 'Deploying application to EC2 with Ansible...'
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+
+                    sshagent(credentials: ['ansible-ec2-key']) {
+
+                        sh '''
+                            ansible-playbook \
+                                -i inventory.ini \
+                                deploy.yml \
+                                -e "dockerhub_user=$DOCKERHUB_USER" \
+                                -e "image_tag=$BUILD_NUMBER"
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Docker Image Check') {
             steps {
                 echo 'Checking Docker image...'
@@ -109,6 +135,7 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'CI/CD pipeline completed successfully!'
         }
