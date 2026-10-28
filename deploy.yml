@@ -2,6 +2,8 @@
 - name: Deploy Cloud Native Application
   hosts: app
   become: true
+  vars_files:
+    - vault.yml
 
   vars:
     container_name: cloud-native-app
