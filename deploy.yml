@@ -34,6 +34,9 @@
           ENVIRONMENT: "production"
           APP_VERSION: "{{ image_tag }}"
           DEPLOYMENT_ID: "jenkins-{{ image_tag }}"
+          JENKINS_URL: "http://172.31.15.0:8080"
+          JENKINS_USER: "{{ jenkins_user }}"
+          JENKINS_TOKEN: "{{ jenkins_token }}"
 
     - name: Wait for application port
       ansible.builtin.wait_for:
