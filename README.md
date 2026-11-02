@@ -378,6 +378,35 @@ The project includes a custom web dashboard that provides real-time visibility i
 The dashboard communicates with the FastAPI backend through REST APIs.
 
 ---
+## 📸 Project Screenshots
+
+### Live DevOps Dashboard
+
+![DevOps Dashboard](screenshots/dashboard1.png)
+
+![DevOps Dashboard](screenshots/dashboard2.png)
+
+### Jenkins CI/CD Pipeline
+
+![Jenkins Pipeline](screenshots/jenkins-pipeline.png)
+
+### Automated Security Scan
+
+![Trivy Security Scan](screenshots/trivy-scan.png)
+
+### Automated Ansible Deployment
+
+![Ansible Deployment](screenshots/ansible-deployment.png)
+
+### Docker Image Repository
+
+![Docker Hub](screenshots/docker-hub.png)
+
+### AWS Infrastructure
+
+![AWS Infrastructure](screenshots/aws-infrastructure.png)
+
+---
 
 # 🔌 API Endpoints
 
