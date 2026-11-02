@@ -380,7 +380,7 @@
         }
         async function metrics() {
             try {
-                const r = await fetch(`${API_BASE}/`, { cache: "no-store" }); if (!r.ok) throw Error(`HTTP ${r.status}`); const d = await r.json();
+                const r = await fetch(`${API_BASE}/api/metrics`, { cache: "no-store" }); if (!r.ok) throw Error(`HTTP ${r.status}`); const d = await r.json();
                 state(true); let c = Number(d.cpu_usage_percent ?? 0), m = Number(d.memory_usage_percent ?? 0), v = versionOf(d), id = deploymentOf(d);
                 $("env").textContent = `ENV: ${(d.environment || "production").toUpperCase()}`; $("version").textContent = `VERSION: ${v}`;
                 $("host").textContent = `Host: ${d.hostname || "--"}`; $("cpu").textContent = c.toFixed(1); $("cpuBar").style.width = Math.min(c, 100) + "%";
