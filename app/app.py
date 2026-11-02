@@ -220,6 +220,7 @@ class EchoRequest(BaseModel):
 
         # pyrefly: ignore[unexpected-keyword]
 
+        # pyrefly: ignore[unexpected-keyword]
         example="Hello DevOps!",
 
     )
@@ -232,6 +233,7 @@ class EchoRequest(BaseModel):
 
         # pyrefly: ignore[unexpected-keyword]
 
+        # pyrefly: ignore[unexpected-keyword]
         example={"source": "dashboard"},
 
     )

@@ -109,6 +109,19 @@
             </div>
         </section>
 
+        <section class="card rounded-xl mt-4 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-white">Jenkins Jobs</h2>
+                    <p class="text-[10px] text-slate-500 mt-1">Live CI/CD job status from Jenkins REST API</p>
+                </div>
+                <span id="jobCount" class="text-[10px] text-slate-600">0 jobs</span>
+            </div>
+            <div id="jobs" class="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div class="text-[10px] text-slate-600">Connecting to Jenkins...</div>
+            </div>
+        </section>
+
         <section class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
             <div class="card rounded-xl p-5">
                 <div class="flex justify-between">
@@ -116,8 +129,16 @@
                         <h2 class="font-semibold text-white">CI/CD Pipeline</h2>
                         <p class="text-[10px] text-slate-500 mt-1">Current deployment pipeline</p>
                     </div>
-                    <span id="pipeline"
-                        class="px-2.5 py-1 rounded-full bg-emerald-950 border border-emerald-900 text-[10px] text-emerald-400">SUCCESS</span>
+                    <div class="flex items-center gap-2">
+                        <span id="jenkinsConnection"
+                            class="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] text-slate-400">
+                            JENKINS: CONNECTING
+                        </span>
+                        <span id="pipeline"
+                            class="px-2.5 py-1 rounded-full bg-emerald-950 border border-emerald-900 text-[10px] text-emerald-400">
+                            SUCCESS
+                        </span>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5">
                     <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
@@ -179,21 +200,20 @@
         <section class="card rounded-xl mt-4 overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-800 flex justify-between">
                 <div>
-                    <h2 class="font-semibold text-white">Deployment History</h2>
-                    <p class="text-[10px] text-slate-500 mt-1">Releases observed by this dashboard</p>
+                    <h2 class="font-semibold text-white">Jenkins Build History</h2>
+                    <p class="text-[10px] text-slate-500 mt-1">Live builds retrieved from Jenkins REST API</p>
                 </div>
-                <button onclick="clearHistory()" class="text-[10px] text-slate-600 hover:text-slate-300">Clear local
-                    history</button>
+                <span id="jenkinsUpdated" class="text-[10px] text-slate-600 self-center">Waiting for Jenkins...</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="text-[9px] uppercase text-slate-600 border-b border-slate-800">
                         <tr>
                             <th class="px-5 py-3">Build</th>
-                            <th class="px-5 py-3">Version</th>
-                            <th class="px-5 py-3">Environment</th>
-                            <th class="px-5 py-3">Status</th>
-                            <th class="px-5 py-3">Observed</th>
+                            <th class="px-5 py-3">Job</th>
+                            <th class="px-5 py-3">Result</th>
+                            <th class="px-5 py-3">Duration</th>
+                            <th class="px-5 py-3">Started</th>
                         </tr>
                     </thead>
                     <tbody id="history" class="text-[10px]"></tbody>
@@ -240,16 +260,117 @@
         function deploymentOf(d) { return d.deployment_id ?? d.deploymentId ?? d.DEPLOYMENT_ID ?? "--" }
         function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c])) }
         function uptime(s) { s = Math.max(0, Number(s) || 0); let d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = Math.floor(s % 60); return d ? `${d}d ${h}h ${m}m` : h ? `${h}h ${m}m ${x}s` : m ? `${m}m ${x}s` : `${x}s` }
+        function formatDuration(ms) {
+            const n = Number(ms);
+            if (!Number.isFinite(n) || n <= 0) return "--";
+            const total = Math.round(n / 1000);
+            const min = Math.floor(total / 60);
+            const sec = total % 60;
+            return min ? `${min}m ${sec}s` : `${sec}s`;
+        }
 
-        function renderHistory() {
-            const a = JSON.parse(localStorage.getItem("dcp_history") || "[]");
-            $("history").innerHTML = a.length ? a.slice(0, 8).map(x => `<tr class="border-b border-slate-900"><td class="px-5 py-3 mono text-white">#${esc(x.build)}</td><td class="px-5 py-3 mono text-cyan-300">v${esc(x.version)}</td><td class="px-5 py-3 text-slate-400">${esc(x.env)}</td><td class="px-5 py-3 text-emerald-400">● SUCCESS</td><td class="px-5 py-3 text-slate-600">${esc(x.time)}</td></tr>`).join("") : `<tr><td colspan="5" class="px-5 py-6 text-center text-slate-600">No deployments observed yet.</td></tr>`;
+        function statusClass(result) {
+            const r = String(result || "RUNNING").toUpperCase();
+            if (r === "SUCCESS") return "text-emerald-400";
+            if (r === "FAILURE" || r === "ABORTED") return "text-rose-400";
+            if (r === "UNSTABLE") return "text-amber-400";
+            return "text-cyan-400";
         }
-        function remember(d) {
-            const v = versionOf(d), id = deploymentOf(d); if (v === "--" && id === "--") return;
-            let a = JSON.parse(localStorage.getItem("dcp_history") || "[]");
-            if (!a.some(x => x.version === String(v) && x.id === String(id))) { a.unshift({ build: String(v).replace(/^v|^#/i, ""), version: String(v), id: String(id), env: d.environment || "production", time: new Date().toLocaleTimeString() }); localStorage.setItem("dcp_history", JSON.stringify(a.slice(0, 12))) } renderHistory();
+
+        function renderHistory(builds) {
+            const a = Array.isArray(builds) ? builds : [];
+
+            $("history").innerHTML = a.length
+                ? a.slice(0, 8).map(x => {
+                    const result = String(x.result || "RUNNING").toUpperCase();
+                    const time = x.timestamp ? new Date(x.timestamp).toLocaleString() : "--";
+
+                    return `
+                        <tr class="border-b border-slate-900 hover:bg-slate-950/60">
+                            <td class="px-5 py-3 mono text-white">#${esc(x.number)}</td>
+                            <td class="px-5 py-3 mono text-cyan-300">${esc(x.job)}</td>
+                            <td class="px-5 py-3 ${statusClass(result)}">● ${esc(result)}</td>
+                            <td class="px-5 py-3 text-slate-400">${formatDuration(x.duration)}</td>
+                            <td class="px-5 py-3 text-slate-600">${esc(time)}</td>
+                        </tr>
+                    `;
+                }).join("")
+                : `<tr><td colspan="5" class="px-5 py-6 text-center text-slate-600">No Jenkins builds found.</td></tr>`;
+
+            $("jenkinsUpdated").textContent = `Updated ${new Date().toLocaleTimeString()}`;
         }
+
+        function renderJobs(jobs) {
+            const a = Array.isArray(jobs) ? jobs : [];
+            $("jobCount").textContent = `${a.length} job${a.length === 1 ? "" : "s"}`;
+
+            $("jobs").innerHTML = a.length
+                ? a.map(job => {
+                    const color = String(job.color || "").toLowerCase();
+                    const running = color.includes("anime") || color.includes("running");
+                    const result = job.last_result || (running ? "RUNNING" : "NOT BUILT");
+
+                    return `
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold text-white truncate">${esc(job.name)}</div>
+                                    <div class="text-[9px] text-slate-600 mt-1">Last build #${esc(job.last_build ?? "--")}</div>
+                                </div>
+                                <span class="${statusClass(result)} text-[9px] font-semibold whitespace-nowrap">
+                                    ● ${esc(result)}
+                                </span>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between text-[9px]">
+                                <span class="text-slate-600">Completed #${esc(job.last_completed ?? "--")}</span>
+                                ${job.url ? `<a href="${esc(job.url)}" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300">Open Jenkins ↗</a>` : ""}
+                            </div>
+                        </div>
+                    `;
+                }).join("")
+                : `<div class="text-[10px] text-slate-600">No Jenkins jobs returned.</div>`;
+        }
+
+        async function jenkins() {
+            try {
+                const r = await fetch(`${API_BASE}/api/jenkins`, { cache: "no-store" });
+                if (!r.ok) throw Error(`HTTP ${r.status}`);
+
+                const d = await r.json();
+
+                if (!d.connected) {
+                    $("jenkinsConnection").textContent = "JENKINS: OFFLINE";
+                    $("jenkinsConnection").className =
+                        "px-2.5 py-1 rounded-full bg-rose-950/40 border border-rose-900 text-[10px] text-rose-400";
+                    $("jobs").innerHTML =
+                        `<div class="text-[10px] text-rose-400">Jenkins unavailable: ${esc(d.error || "Unknown error")}</div>`;
+                    return;
+                }
+
+                $("jenkinsConnection").textContent = "JENKINS: CONNECTED";
+                $("jenkinsConnection").className =
+                    "px-2.5 py-1 rounded-full bg-emerald-950 border border-emerald-900 text-[10px] text-emerald-400";
+
+                renderJobs(d.jobs);
+                renderHistory(d.builds);
+
+                const latest = Array.isArray(d.builds) ? d.builds[0] : null;
+                if (latest) {
+                    const result = String(latest.result || "RUNNING").toUpperCase();
+                    $("build").textContent = `#${latest.number ?? "--"}`;
+                    $("pipeline").textContent = result;
+                    $("pipeline").className =
+                        `px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] ${statusClass(result)}`;
+                }
+            } catch (e) {
+                $("jenkinsConnection").textContent = "JENKINS: ERROR";
+                $("jenkinsConnection").className =
+                    "px-2.5 py-1 rounded-full bg-rose-950/40 border border-rose-900 text-[10px] text-rose-400";
+                console.error("Jenkins API error:", e);
+            }
+        }
+
+
         function state(ok) {
             $("dot").className = ok ? "w-3 h-3 rounded-full bg-emerald-400 pulse" : "w-3 h-3 rounded-full bg-rose-500";
             $("status").textContent = ok ? "Operational" : "Disconnected";
@@ -266,7 +387,7 @@
                 $("cpuState").textContent = c < 70 ? "Within normal operating range" : c < 90 ? "Elevated utilization" : "High utilization";
                 $("mem").textContent = m.toFixed(1); $("memDetail").textContent = `${d.memory_used_mb ?? 0} MB / ${d.memory_total_mb ?? 0} MB`; $("memBar").style.width = Math.min(m, 100) + "%";
                 $("uptime").textContent = uptime(d.uptime_seconds); $("connections").textContent = d.active_connections ?? 0; $("platform").textContent = `Platform: ${d.platform || "--"}`;
-                $("deployVersion").textContent = v; $("deploymentId").textContent = id; $("build").textContent = "#" + String(v).replace(/^v|^#/i, ""); remember(d); $("updated").textContent = `Updated ${new Date().toLocaleTimeString()}`;
+                $("deployVersion").textContent = v; $("deploymentId").textContent = id; $("build").textContent = "#" + String(v).replace(/^v|^#/i, ""); $("updated").textContent = `Updated ${new Date().toLocaleTimeString()}`;
             } catch (e) { state(false); $("updated").textContent = "Connection lost"; console.error(e) }
         }
         async function logs() {
@@ -279,9 +400,14 @@
             let msg = $("message").value.trim(); if (!msg) return; $("send").disabled = true; $("send").textContent = "Sending..."; $("response").textContent = "POST /echo ...";
             try { let r = await fetch(`${API_BASE}/echo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg, metadata: { source: "dashboard-ui", client_time: new Date().toISOString() } }) }); $("response").textContent = JSON.stringify(await r.json(), null, 2); logs() } catch (e) { $("response").textContent = `Request failed: ${e.message}` } finally { $("send").disabled = false; $("send").textContent = "Send" }
         }
-        function clearHistory() { localStorage.removeItem("dcp_history"); renderHistory() }
         $("message").addEventListener("keydown", e => { if (e.key === "Enter") sendEcho() });
-        renderHistory(); metrics(); logs(); setInterval(metrics, 2000); setInterval(logs, 2500);
+        metrics();
+        logs();
+        jenkins();
+
+        setInterval(metrics, 2000);
+        setInterval(logs, 2500);
+        setInterval(jenkins, 3000);
     </script>
 </body>
 
