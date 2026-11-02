@@ -689,7 +689,7 @@ async def cicd_information():
 )
 async def jenkins_dashboard():
     """
-    Return live Jenkins jobs and latest build information.
+    Return live Jenkins jobs and recent build history.
     Jenkins credentials are supplied through environment variables.
     """
     jenkins_url = os.getenv("JENKINS_URL")
@@ -708,7 +708,8 @@ async def jenkins_dashboard():
         f"{jenkins_url.rstrip('/')}/api/json"
         "?tree=jobs[name,url,color,"
         "lastBuild[number,result,timestamp,duration],"
-        "lastCompletedBuild[number,result,timestamp]]"
+        "lastCompletedBuild[number,result,timestamp],"
+        "builds[number,result,timestamp,duration]{0,10}]"
     )
 
     request = urllib.request.Request(api_url)
@@ -740,14 +741,14 @@ async def jenkins_dashboard():
                 }
             )
 
-            if last_build:
+            for build in job.get("builds", []):
                 builds.append(
                     {
                         "job": job.get("name"),
-                        "number": last_build.get("number"),
-                        "result": last_build.get("result"),
-                        "timestamp": last_build.get("timestamp"),
-                        "duration": last_build.get("duration"),
+                        "number": build.get("number"),
+                        "result": build.get("result"),
+                        "timestamp": build.get("timestamp"),
+                        "duration": build.get("duration"),
                         "url": job.get("url"),
                     }
                 )
@@ -760,7 +761,7 @@ async def jenkins_dashboard():
         return {
             "connected": True,
             "jobs": jobs,
-            "builds": builds,
+            "builds": builds[:10],
         }
 
     except Exception as exc:
@@ -772,7 +773,6 @@ async def jenkins_dashboard():
             "jobs": [],
             "builds": [],
         }
-
 
 # ============================================================
 
